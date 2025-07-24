@@ -17,24 +17,18 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4 # Action to check out your repository code.
 
-    - name: Set up MSVC (Visual Studio C++ Compiler)
-      # This action sets up the Visual Studio build environment, including MSVC and Windows SDK.
-      # It also provides an output variable for the path to vcvarsall.bat.
-      id: setup-msvc # Added an ID to reference outputs from this step
-      uses: microsoft/setup-msbuild@v1.1 # Use a specific version for stability.
+    - name: Set up MSVC Development Environment
+      # This action is specifically designed to set up the Visual C++ build environment
+      # and make 'cl.exe' available in the PATH for subsequent steps.
+      # This replaces the need for 'microsoft/setup-msbuild' and manual vcvarsall.bat calls.
+      uses: ilammy/msvc-dev-cmd@v1 # A popular action for this purpose.
       with:
-        vs-version: latest # Use the latest Visual Studio version available.
-        # Ensure the correct architecture is set if your app is specifically 32-bit or 64-bit.
-        # For Windows 7 compatibility, 32-bit is often safer, but 64-bit is common now.
-        # The default is usually x64, which is fine for modern Windows.
+        arch: x64 # Specify the architecture (x64 for most modern Windows apps).
 
     - name: Compile Celestei C++ Client
-      # Corrected: Use the vcvarsall.bat path provided by the 'setup-msvc' step
-      # to explicitly set up the environment before running cl.exe in the same command.
-      run: |
-        call "${{ steps.setup-msvc.outputs.vcvarsall_path }}" x64
-        cl celestei_client.cpp /Fe:"Celestei CONNECT.exe" /link Ws2_32.lib
-      shell: cmd # Explicitly use cmd.exe for this step, as vcvarsall.bat is a batch script.
+      # Now, 'cl.exe' should be directly available in the PATH.
+      run: cl celestei_client.cpp /Fe:"Celestei CONNECT.exe" /link Ws2_32.lib
+      shell: cmd # Explicitly use cmd.exe for this step.
 
     - name: Download and Install Inno Setup
       # Inno Setup is not pre-installed on GitHub Actions runners, so we install it.
