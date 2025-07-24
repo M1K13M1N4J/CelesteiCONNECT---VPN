@@ -21,7 +21,8 @@ jobs:
       # This action sets up the Visual Studio build environment, including MSVC and Windows SDK.
       uses: microsoft/setup-msbuild@v1.1 # Use a specific version for stability.
       with:
-        msbuild-version: latest # Use the latest MSBuild version available.
+        # Corrected input: 'vs-version' instead of 'msbuild-version'
+        vs-version: latest # Use the latest Visual Studio version available.
         # Ensure the correct architecture is set if your app is specifically 32-bit or 64-bit.
         # For Windows 7 compatibility, 32-bit is often safer, but 64-bit is common now.
         # The default is usually x64, which is fine for modern Windows.
