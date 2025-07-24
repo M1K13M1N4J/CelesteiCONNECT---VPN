@@ -19,6 +19,8 @@ jobs:
 
     - name: Set up MSVC (Visual Studio C++ Compiler)
       # This action sets up the Visual Studio build environment, including MSVC and Windows SDK.
+      # It also provides an output variable for the path to vcvarsall.bat.
+      id: setup-msvc # Added an ID to reference outputs from this step
       uses: microsoft/setup-msbuild@v1.1 # Use a specific version for stability.
       with:
         vs-version: latest # Use the latest Visual Studio version available.
@@ -27,11 +29,12 @@ jobs:
         # The default is usually x64, which is fine for modern Windows.
 
     - name: Compile Celestei C++ Client
-      # Corrected: Rely on setup-msbuild to set the environment and directly call cl.exe.
-      # Using 'shell: cmd' ensures the command runs in a traditional Windows command prompt,
-      # where cl.exe is typically found after MSVC environment setup.
-      run: cl celestei_client.cpp /Fe:"Celestei CONNECT.exe" /link Ws2_32.lib
-      shell: cmd # Explicitly use cmd.exe for this step
+      # Corrected: Use the vcvarsall.bat path provided by the 'setup-msvc' step
+      # to explicitly set up the environment before running cl.exe in the same command.
+      run: |
+        call "${{ steps.setup-msvc.outputs.vcvarsall_path }}" x64
+        cl celestei_client.cpp /Fe:"Celestei CONNECT.exe" /link Ws2_32.lib
+      shell: cmd # Explicitly use cmd.exe for this step, as vcvarsall.bat is a batch script.
 
     - name: Download and Install Inno Setup
       # Inno Setup is not pre-installed on GitHub Actions runners, so we install it.
