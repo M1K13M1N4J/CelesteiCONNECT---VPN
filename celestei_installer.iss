@@ -3,15 +3,15 @@
 
 [Setup]
 ; Your application's general information
-AppName=Celestei Network Client
+AppName=Celestei CONNECT
 AppVersion=1.0
 ; The default directory where the application will be installed.
 ; {autopf} expands to "Program Files" or "Program Files (x86)" automatically.
-DefaultDirName={autopf}\Celestei Network Client
-DefaultGroupName=Celestei Network Client
+DefaultDirName={autopf}\Celestei CONNECT
+DefaultGroupName=Celestei CONNECT
 AllowNoIcons=yes
 ; Output filename for your installer executable
-OutputBaseFilename=CelesteiNetworkClient_Setup
+OutputBaseFilename=CelesteiCONNECT_Setup
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
@@ -21,19 +21,21 @@ WizardStyle=modern
 ; DestDir: The destination directory on the user's system.
 ; Flags: 'ignoreversion' prevents warnings if file versions don't match.
 ; 'restartreplace' handles files that are in use.
-Source: "celestei_client.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace ; <--- UPDATED THIS LINE
+; UPDATED: Source now points to "Celestei CONNECT.exe"
+Source: "Celestei CONNECT.exe"; DestDir: "{app}"; Flags: ignoreversion restartreplace
 
 [Icons]
 ; Creates a shortcut in the Start Menu Programs folder.
 ; Name: The path and name of the shortcut.
 ; Filename: The executable the shortcut points to.
-Name: "{group}\Celestei Network Client"; Filename: "{app}\celestei_client.exe"
+; UPDATED: Filename now points to "Celestei CONNECT.exe"
+Name: "{group}\Celestei CONNECT"; Filename: "{app}\Celestei CONNECT.exe"
 ; Optional: Create a desktop shortcut
-Name: "{autodesktop}\Celestei Network Client"; Filename: "{app}\celestei_client.exe"; Tasks: desktopicon
+Name: "{autodesktop}\Celestei CONNECT"; Filename: "{app}\Celestei CONNECT.exe"; Tasks: desktopicon
 
 [Run]
 ; Optional: Run the application after installation
-; Filename: "{app}\celestei_client.exe"; Description: "Launch Celestei Network Client"; Flags: postinstall skipifsilent
+; Filename: "{app}\Celestei CONNECT.exe"; Description: "Launch Celestei CONNECT"; Flags: postinstall skipifsilent
 
 [Tasks]
 ; Defines a task for the user to select during installation.
