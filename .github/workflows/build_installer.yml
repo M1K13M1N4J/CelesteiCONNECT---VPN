@@ -21,19 +21,28 @@ jobs:
       # This action sets up the Visual Studio build environment, including MSVC and Windows SDK.
       uses: microsoft/setup-msbuild@v1.1 # Use a specific version for stability.
       with:
-        # Corrected input: 'vs-version' instead of 'msbuild-version'
         vs-version: latest # Use the latest Visual Studio version available.
         # Ensure the correct architecture is set if your app is specifically 32-bit or 64-bit.
         # For Windows 7 compatibility, 32-bit is often safer, but 64-bit is common now.
         # The default is usually x64, which is fine for modern Windows.
 
     - name: Compile Celestei C++ Client
+      # Corrected: Use a PowerShell script block to properly initialize the MSVC environment
+      # before calling cl.exe. This ensures 'cl' is recognized.
       run: |
-        # Compile your C++ source file using the MSVC compiler (cl.exe).
-        # Ws2_32.lib is automatically found by cl.exe when MSVC environment is set up.
-        # Ensure your celestei_client.cpp is in the root of your repository.
-        # UPDATED: Changed output executable name to "Celestei CONNECT.exe"
-        cl celestei_client.cpp /Fe:"Celestei CONNECT.exe" /link Ws2_32.lib
+        # Find the path to vcvarsall.bat, which sets up the MSVC environment variables.
+        # This path might vary slightly depending on the exact VS version and architecture.
+        # 'vcvarsall.bat' is typically found in the VC directory of the Visual Studio installation.
+        # We'll use a common path and assume x64 architecture.
+        $vcvarsallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat"
+        # If 'Enterprise' isn't correct, try 'Community' or 'Professional'.
+        # For different VS versions, change '2022'.
+
+        # Execute vcvarsall.bat to set up the environment for x64.
+        # Call cmd.exe to run the batch file, then pipe the commands to it.
+        # The '&' operator in PowerShell runs an external command.
+        & cmd.exe /c "`"$vcvarsallPath`" x64 & cl celestei_client.cpp /Fe:`"Celestei CONNECT.exe`" /link Ws2_32.lib"
+      shell: pwsh # Explicitly use PowerShell for this step
 
     - name: Download and Install Inno Setup
       # Inno Setup is not pre-installed on GitHub Actions runners, so we install it.
@@ -62,7 +71,7 @@ jobs:
       uses: actions/upload-artifact@v4 # Action to upload build artifacts.
       with:
         name: Celestei-Network-Client-Installer # Name for the artifact.
-        path: CelesteiNetworkClient_Setup.exe # Path to the generated installer.
+        path: CelesteiCONNECT_Setup.exe # Path to the generated installer.
         # The installer will be in the same directory as the .iss script by default.
         # This will create a .zip file containing the installer that you can download from the workflow run.
 
