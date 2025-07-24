@@ -27,22 +27,11 @@ jobs:
         # The default is usually x64, which is fine for modern Windows.
 
     - name: Compile Celestei C++ Client
-      # Corrected: Use a PowerShell script block to properly initialize the MSVC environment
-      # before calling cl.exe. This ensures 'cl' is recognized.
-      run: |
-        # Find the path to vcvarsall.bat, which sets up the MSVC environment variables.
-        # This path might vary slightly depending on the exact VS version and architecture.
-        # 'vcvarsall.bat' is typically found in the VC directory of the Visual Studio installation.
-        # We'll use a common path and assume x64 architecture.
-        $vcvarsallPath = "${env:ProgramFiles(x86)}\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvarsall.bat"
-        # If 'Enterprise' isn't correct, try 'Community' or 'Professional'.
-        # For different VS versions, change '2022'.
-
-        # Execute vcvarsall.bat to set up the environment for x64.
-        # Call cmd.exe to run the batch file, then pipe the commands to it.
-        # The '&' operator in PowerShell runs an external command.
-        & cmd.exe /c "`"$vcvarsallPath`" x64 & cl celestei_client.cpp /Fe:`"Celestei CONNECT.exe`" /link Ws2_32.lib"
-      shell: pwsh # Explicitly use PowerShell for this step
+      # Corrected: Rely on setup-msbuild to set the environment and directly call cl.exe.
+      # Using 'shell: cmd' ensures the command runs in a traditional Windows command prompt,
+      # where cl.exe is typically found after MSVC environment setup.
+      run: cl celestei_client.cpp /Fe:"Celestei CONNECT.exe" /link Ws2_32.lib
+      shell: cmd # Explicitly use cmd.exe for this step
 
     - name: Download and Install Inno Setup
       # Inno Setup is not pre-installed on GitHub Actions runners, so we install it.
