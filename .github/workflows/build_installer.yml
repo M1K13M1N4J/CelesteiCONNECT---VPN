@@ -1,0 +1,80 @@
+# This GitHub Actions workflow automates the compilation of your C++ application
+# and the creation of its Windows installer using Inno Setup.
+
+name: Build and Package Celestei Client
+
+on:
+  push:
+    branches:
+      - main # This workflow will run whenever you push changes to the 'main' branch.
+             # You can change this to 'master' or a specific tag (e.g., 'v*.*.*') for releases.
+
+jobs:
+  build:
+    runs-on: windows-latest # Use a Windows runner as your application is for Windows.
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4 # Action to check out your repository code.
+
+    - name: Set up MSVC (Visual Studio C++ Compiler)
+      # This action sets up the Visual Studio build environment, including MSVC and Windows SDK.
+      uses: microsoft/setup-msbuild@v1.1 # Use a specific version for stability.
+      with:
+        msbuild-version: latest # Use the latest MSBuild version available.
+        # Ensure the correct architecture is set if your app is specifically 32-bit or 64-bit.
+        # For Windows 7 compatibility, 32-bit is often safer, but 64-bit is common now.
+        # The default is usually x64, which is fine for modern Windows.
+
+    - name: Compile Celestei C++ Client
+      run: |
+        # Compile your C++ source file using the MSVC compiler (cl.exe).
+        # Ws2_32.lib is automatically found by cl.exe when MSVC environment is set up.
+        # Ensure your celestei_client.cpp is in the root of your repository.
+        cl celestei_client.cpp /Fe:celestei_client.exe /link Ws2_32.lib
+
+    - name: Download and Install Inno Setup
+      # Inno Setup is not pre-installed on GitHub Actions runners, so we install it.
+      run: |
+        # Download the Inno Setup installer executable.
+        # You might want to pin a specific version URL for stability.
+        # This URL is for a recent stable version.
+        $innoSetupInstaller = "is-6.2.2-unicode.exe"
+        Invoke-WebRequest -Uri "https://jrsoftware.org/download.php/is.exe" -OutFile $innoSetupInstaller
+
+        # Run the Inno Setup installer silently.
+        # /SILENT and /SP- are crucial for unattended installation.
+        Start-Process -FilePath $innoSetupInstaller -ArgumentList "/SILENT /SP- /NOCANCEL /NORESTART" -Wait
+
+    - name: Compile Inno Setup Installer
+      run: |
+        # Find the Inno Setup compiler executable (ISCC.exe).
+        # It's usually in "C:\Program Files (x86)\Inno Setup 6".
+        $innoSetupPath = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+
+        # Run ISCC.exe with your .iss script.
+        # Ensure your celestei_installer.iss is in the root of your repository.
+        & $innoSetupPath celestei_installer.iss
+
+    - name: Upload Installer as Artifact
+      uses: actions/upload-artifact@v4 # Action to upload build artifacts.
+      with:
+        name: Celestei-Network-Client-Installer # Name for the artifact.
+        path: CelesteiNetworkClient_Setup.exe # Path to the generated installer.
+        # The installer will be in the same directory as the .iss script by default.
+        # This will create a .zip file containing the installer that you can download from the workflow run.
+
+    # Optional: Create a GitHub Release and attach the installer
+    # This step is more advanced and typically triggered on tags (e.g., v1.0.0).
+    # If you want to create a release, change the 'on:' trigger above to:
+    # on:
+    #   release:
+    #     types: [published]
+    #
+    # - name: Create GitHub Release
+    #   if: github.event_name == 'release'
+    #   uses: softprops/action-gh-release@v1
+    #   with:
+    #     files: CelesteiNetworkClient_Setup.exe
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
