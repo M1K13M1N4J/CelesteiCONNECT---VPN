@@ -44,14 +44,17 @@ jobs:
         Start-Process -FilePath $innoSetupInstaller -ArgumentList "/SILENT /SP- /NOCANCEL /NORESTART" -Wait
 
     - name: Compile Inno Setup Installer
+      # UPDATED: Added /O- (Output directory) flag to ISCC.exe to ensure the installer
+      # is created in the current working directory (the repository root).
       run: |
         # Find the Inno Setup compiler executable (ISCC.exe).
         # It's usually in "C:\Program Files (x86)\Inno Setup 6".
         $innoSetupPath = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
 
-        # Run ISCC.exe with your .iss script.
-        # Ensure your celestei_installer.iss is in the root of your repository.
-        & $innoSetupPath celestei_installer.iss
+        # Run ISCC.exe with your .iss script and specify the output directory.
+        # The '.' means the current directory (repository root).
+        & $innoSetupPath /O"." celestei_installer.iss
+      shell: pwsh # Use PowerShell for this step as it's more robust for path handling.
 
     - name: Upload Installer as Artifact
       uses: actions/upload-artifact@v4 # Action to upload build artifacts.
@@ -72,6 +75,6 @@ jobs:
     #   if: github.event_name == 'release'
     #   uses: softprops/action-gh-release@v1
     #   with:
-    #     files: CelesteiNetworkClient_Setup.exe
+    #     files: CelesteiCONNECT_Setup.exe # Ensure this matches the OutputBaseFilename in .iss
     #   env:
     #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
