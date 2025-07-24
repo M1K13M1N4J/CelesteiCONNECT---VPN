@@ -19,8 +19,7 @@ jobs:
 
     - name: Set up MSVC (Visual Studio C++ Compiler)
       # This action sets up the Visual Studio build environment, including MSVC and Windows SDK.
-      # It also provides an output variable for the path to vcvarsall.bat.
-      id: setup-msvc # Added an ID to reference outputs from this step
+      # It's still good practice to include this, even if we manually invoke vcvarsall.bat.
       uses: microsoft/setup-msbuild@v1.1 # Use a specific version for stability.
       with:
         vs-version: latest # Use the latest Visual Studio version available.
@@ -29,12 +28,22 @@ jobs:
         # The default is usually x64, which is fine for modern Windows.
 
     - name: Compile Celestei C++ Client
-      # Corrected: Use the vcvarsall.bat path provided by the 'setup-msvc' step
-      # to explicitly set up the environment before running cl.exe in the same command.
+      # Corrected: Dynamically find and call vcvarsall.bat, then compile.
+      # This ensures the MSVC environment is correctly set up in the same shell session.
       run: |
-        call "${{ steps.setup-msvc.outputs.vcvarsall_path }}" x64
-        cl celestei_client.cpp /Fe:"Celestei CONNECT.exe" /link Ws2_32.lib
-      shell: cmd # Explicitly use cmd.exe for this step, as vcvarsall.bat is a batch script.
+        # Find the latest vcvarsall.bat using Get-ChildItem (PowerShell equivalent of 'find').
+        # This searches common Visual Studio installation paths for the batch file.
+        $vcvarsallPath = (Get-ChildItem -Path "C:\Program Files (x86)\Microsoft Visual Studio\" -Recurse -Filter "vcvarsall.bat" | Select-Object -ExpandProperty FullName | Sort-Object -Descending | Select-Object -First 1)
+        if (-not $vcvarsallPath) {
+            throw "Error: vcvarsall.bat not found. Visual Studio build tools might not be installed correctly on the runner."
+        }
+        Write-Host "Found vcvarsall.bat at: $vcvarsallPath"
+
+        # Call vcvarsall.bat to set up the environment for x64.
+        # The semicolon ';' allows chaining commands in PowerShell.
+        # Then, in the same command, compile the C++ client.
+        & "$vcvarsallPath" x64 ; cl celestei_client.cpp /Fe:"Celestei CONNECT.exe" /link Ws2_32.lib
+      shell: pwsh # Explicitly use PowerShell for this step for robust path finding and command chaining.
 
     - name: Download and Install Inno Setup
       # Inno Setup is not pre-installed on GitHub Actions runners, so we install it.
