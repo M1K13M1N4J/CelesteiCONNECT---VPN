@@ -3,11 +3,20 @@
 // IMPORTANT: This is NOT a VPN application and does NOT provide any security or tunneling features.
 // It only shows how to establish a basic network connection and send/receive data.
 
+// --- IMPORTANT WINSOCK HEADER FIX ---
+// Define WIN32_LEAN_AND_MEAN to exclude rarely-used stuff from Windows headers,
+// which can speed up compilation and reduce conflicts.
+#define WIN32_LEAN_AND_MEAN
+// Define _WINSOCKAPI_ to prevent windows.h from including the older winsock.h.
+// This ensures that only winsock2.h (which we explicitly include) is used.
+#define _WINSOCKAPI_
+// --- END WINSOCK HEADER FIX ---
+
 #include <iostream> // For standard input/output operations (e.g., std::cout, std::cerr)
 #include <string>   // For using std::string
-#include <windows.h> // For Windows-specific functions like SetConsoleTitleA, Sleep
-#include <winsock2.h> // Core Winsock functions
-#include <ws2tcpip.h> // For functions like getaddrinfo, inet_pton
+#include <windows.h> // General Windows API functions. Must be included AFTER _WINSOCKAPI_ if using Winsock2.
+#include <winsock2.h> // Core Winsock 2.2 functions.
+#include <ws2tcpip.h> // For modern TCP/IP functions like getaddrinfo.
 
 // Link with Ws2_32.lib for Winsock functions
 #pragma comment(lib, "Ws2_32.lib")
@@ -25,14 +34,13 @@ void resetConsoleColor() {
 
 int main() {
     // Set the console window title to reflect the application's brand.
-    // UPDATED: Changed title to reflect the desired EXE name
     SetConsoleTitleA("Celestei CONNECT");
 
     // Display the branded header for the application.
     std::cout << "****************************************" << std::endl;
     std::cout << "* *" << std::endl;
     setConsoleColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY); // Bright Blue color for "celestei"
-    std::cout << "* Celestei CONNECT            *" << std::endl; // Also updated this line for consistency
+    std::cout << "* Celestei CONNECT            *" << std::endl;
     resetConsoleColor(); // Reset color to default
     std::cout << "* *" << std::endl;
     std::cout << "****************************************" << std::endl;
