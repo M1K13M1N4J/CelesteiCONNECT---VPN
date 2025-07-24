@@ -25,13 +25,14 @@ void resetConsoleColor() {
 
 int main() {
     // Set the console window title to reflect the application's brand.
-    SetConsoleTitleA("Celestei Network Client");
+    // UPDATED: Changed title to reflect the desired EXE name
+    SetConsoleTitleA("Celestei CONNECT");
 
     // Display the branded header for the application.
     std::cout << "****************************************" << std::endl;
     std::cout << "* *" << std::endl;
     setConsoleColor(FOREGROUND_BLUE | FOREGROUND_INTENSITY); // Bright Blue color for "celestei"
-    std::cout << "* celestei Network Client     *" << std::endl;
+    std::cout << "* Celestei CONNECT            *" << std::endl; // Also updated this line for consistency
     resetConsoleColor(); // Reset color to default
     std::cout << "* *" << std::endl;
     std::cout << "****************************************" << std::endl;
@@ -117,7 +118,7 @@ int main() {
     std::cout << "Successfully connected to " << SERVER_IP << ":" << SERVER_PORT << std::endl;
 
     // --- Send Data to Server ---
-    const char* sendbuf = "Hello from Celestei C++ Client!"; // Message to send
+    const char* sendbuf = "Hello from Celestei CONNECT Client!"; // Message to send
     // Send the message over the socket.
     iResult = send(connectSocket, sendbuf, (int)strlen(sendbuf), 0);
     if (iResult == SOCKET_ERROR) {
@@ -147,6 +148,7 @@ int main() {
     }
 
     // --- Shutdown and Cleanup ---
+    // Shutdown the connection for sending; no more data will be sent from client.
     iResult = shutdown(connectSocket, SD_SEND);
     if (iResult == SOCKET_ERROR) {
         std::cerr << "ERROR: shutdown failed with error: " << WSAGetLastError() << std::endl;
@@ -155,8 +157,8 @@ int main() {
     closesocket(connectSocket); // Close the socket
     WSACleanup(); // Clean up Winsock resources
 
-    std::cout << "VPN Connection successfully ended. Press any key to exit..." << std::endl;
+    std::cout << "Client finished. Press any key to exit..." << std::endl;
     getchar(); // Pause console to allow user to read output
 
-    return 0; // 
+    return 0; // Indicate successful execution
 }
